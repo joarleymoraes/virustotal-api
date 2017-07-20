@@ -60,7 +60,7 @@ class PublicApi():
         if api_key is None:
             raise ApiError("You must supply a valid VirusTotal API key.")
 
-    def scan_file(self, this_file, from_disk=True, filename=None, timeout=None):
+    def scan_file(self, this_file, from_disk=True, filename=None, upload_url=None, timeout=None):
         """ Submit a file to be scanned by VirusTotal.
 
         The VirusTotal API allows you to send files. Before performing your submissions we encourage you to retrieve
@@ -72,6 +72,7 @@ class PublicApi():
         :param from_disk: If True we read the file contents from disk using this_file as filepath. If False this_file
                           is the actual file object.
         :param filename: Specify the filename, this overwrites the filename if we read a file from disk.
+        :param upload_url: If set, the upload request will use the provided URL. Can be used with `upload_url()`
         :param timeout: The amount of time in seconds the request should wait before timing out.
 
         :return: JSON response that contains scan_id and permalink.
@@ -87,9 +88,10 @@ class PublicApi():
             else:
                 files = {'file': this_file}
 
+        if not upload_url:
+            upload_url = self.base + 'file/scan'
         try:
-            response = requests.post(
-                self.base + 'file/scan', files=files, params=params, proxies=self.proxies, timeout=timeout)
+            response = requests.post(upload_url, files=files, params=params, proxies=self.proxies, timeout=timeout)
         except requests.RequestException as e:
             return dict(error=str(e))
 
